@@ -1,0 +1,44 @@
+/home/ceci/ceci/facu/ALP/2024/Tps/TP2-2024/prueba/TP2/package.yaml:
+  hash: 3f5d9d8a2a57469ed5359f4daf48ab7a74a6eb0299ce2def67ad968547b7ac61
+  size: 1206
+  modtime: 1728409812
+/home/ceci/ceci/facu/ALP/2024/Tps/TP2-2024/prueba/TP2/src/Common.hs:
+  hash: c18f467a1f4eb4701a3dc29bdbac50ad025d8d4ec7487cc872b67920340fde4e
+  size: 1933
+  modtime: 1726251727
+/home/ceci/ceci/facu/ALP/2024/Tps/TP2-2024/prueba/TP2/src/Parse.y:
+  hash: fdc84850c1157735ac40989d1fda0cde1c20240de866c5120d955c2dae4857b8
+  size: 4472
+  modtime: 1726192729
+/home/ceci/.stack/programs/x86_64-linux/ghc-tinfo6-8.8.3/lib/ghc-8.8.3/include/ghcversion.h:
+  hash: 40d1b759f485f1cd5a54141a6412691ac2b76930507289a16a6a7b89b045b4d2
+  size: 524
+  modtime: 1713298748
+/usr/include/stdc-predef.h:
+  hash: cb08cd5d4cc059a90833ac48a284d25016e8d56ded8ad4cd98d8ac59cc5053f3
+  size: 2462
+  modtime: 1715027668
+? /home/ceci/ceci/facu/ALP/2024/Tps/TP2-2024/prueba/TP2/.stack-work/dist/x86_64-linux-tinfo6/Cabal-3.0.1.0/build/autogen/cabal_macros.h
+: hash: a363893fe5d08cf797ebd187ef3bbe99234106eb6c42ede3243f2619072f2861
+  size: 7724
+  modtime: 1728409997
+/home/ceci/ceci/facu/ALP/2024/Tps/TP2-2024/prueba/TP2/src/PrettyPrinter.hs:
+  hash: 9491d18994f6082af5a86ab058c5e53608c73fe53f26de26d096f276c4f8e039
+  size: 1580
+  modtime: 1728400321
+/home/ceci/ceci/facu/ALP/2024/Tps/TP2-2024/prueba/TP2/ChangeLog.md:
+  hash: b6db31e04d81c0e662bab2cbee2044b15c6a17422f0ed7b23ee85da5086cf956
+  size: 43
+  modtime: 1661956735
+/home/ceci/ceci/facu/ALP/2024/Tps/TP2-2024/prueba/TP2/README.md:
+  hash: 7a6d5cb38ef1bd8af98a911f831eb4352fabde8c1b3ac75ae436dba070996555
+  size: 3429
+  modtime: 1728409251
+/home/ceci/ceci/facu/ALP/2024/Tps/TP2-2024/prueba/TP2/TP2.cabal:
+  hash: aa2a4daf50b42034ad0f272d627ef3be7c983c498b93d3e7f55febe039d71d96
+  size: 1631
+  modtime: 1728409958
+/home/ceci/ceci/facu/ALP/2024/Tps/TP2-2024/prueba/TP2/src/Simplytyped.hs:
+  hash: ab557d8855347139266f8a4c4b0b8ab43d77036627714e14e06f4d339b31ef16
+  size: 2876
+  modtime: 1728410137
