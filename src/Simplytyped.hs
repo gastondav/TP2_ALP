@@ -9,12 +9,12 @@ module Simplytyped
   )
 where
 
-import Data.List
-import Data.Maybe
-import Prelude hiding ( (>>=) )
-import Text.PrettyPrint.HughesPJ ( render )
-import PrettyPrinter
-import Common
+import           Data.List
+import           Data.Maybe
+import           Prelude                 hiding ( (>>=) )
+import           Text.PrettyPrint.HughesPJ      ( render )
+import           PrettyPrinter
+import           Common
 
 -----------------------
 -- conversion
@@ -22,19 +22,21 @@ import Common
 
 -- conversion a términos localmente sin nombres
 conversion :: LamTerm -> Term
-conversion (LVar x) = (Free x)
-conversion (LAbs x tipo lterm) = (Lam tipo conversion_aux [x] lterm )
+conversion (LVar x) = (Free (Global x))
+conversion (LAbs x tipo lterm) = Lam tipo (conversion_aux [x] lterm )
+conversion (LApp v u) = (conversion v) :@: (conversion u)
 
 
-conversion_aux :: LamTerm -> Term
+conversion_aux :: [String] -> LamTerm -> Term
 conversion_aux xs (LVar x) = (ligada x xs 0) 
 conversion_aux xs (LAbs x t lterm) = Lam t (conversion_aux (x:xs) lterm)  
-conversion_aux xs (LApp v u) = (conversion_aux xs v) (conversion_aux xs u)
+conversion_aux xs (LApp v u) = (conversion_aux xs v) :@: (conversion_aux xs u)
 
 ligada :: String -> [String] -> Int -> Term
-ligada name [] _ = (Free name)
-ligada name (name:xs) i = (Bound i)
-ligada name (x:xs) i = ligada name xs (i+1) 
+ligada name [] _ = (Free (Global name))
+ligada name (x:xs) i = if x == name 
+                        then (Bound i)
+                        else ligada name xs (i + 1)
 
 ----------------------------
 --- evaluador de términos
@@ -55,6 +57,8 @@ quote (VLam t f) = Lam t f
 -- evalúa un término en un entorno dado
 eval :: NameEnv Value Type -> Term -> Value
 eval = undefined
+
+
 
 
 ----------------------
