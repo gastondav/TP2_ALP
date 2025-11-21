@@ -56,9 +56,18 @@ quote (VLam t f) = Lam t f
 
 -- evalúa un término en un entorno dado
 eval :: NameEnv Value Type -> Term -> Value
-eval = undefined
+eval nvs (Free x) = buscarEnv nvs x 
+eval nvs (Lam t term) = (VLam t term)
+eval nvs (u :@: v) = let f = eval nvs u
+                         arg = eval nvs v
+                         in aplicar f arg
+                      where 
+                        aplicar (VLam t cuerpo) arg = eval nvs (sub 0 (quote arg) cuerpo)
 
-
+buscarEnv :: NameEnv Value Type -> Name -> Value
+buscarEnv ((y, (valor, tipo)):xs) x = if x == y 
+                                      then valor
+                                      else buscarEnv xs x
 
 
 ----------------------
