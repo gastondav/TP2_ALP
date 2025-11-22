@@ -44,6 +44,9 @@ pp ii vs (Let t1 t2) =
     <+> pp ii vs t1
     <+> text "in"
     <+> pp (ii + 1) vs t2
+pp ii vs Zero = text "0"
+pp ii vs (Suc t) = text "suc" <+> pp ii vs t
+pp ii vs (Rec t1 t2 t3) = text "R" <+> pp ii vs t1 <+> pp ii vs t2 <+> pp ii vs t3
 
 
 isLam :: Term -> Bool
@@ -74,4 +77,5 @@ fv (Lam _   u       ) = fv u
 ---
 printTerm :: Term -> Doc
 printTerm t = pp 0 (filter (\v -> not $ elem v (fv t)) vars) t
+
 
