@@ -29,7 +29,9 @@ conversion_aux xs (LVar x) = ligada x xs 0
 conversion_aux xs (LAbs x t lterm) = Lam t (conversion_aux (x:xs) lterm)  
 conversion_aux xs (LApp v u) = (conversion_aux xs v) :@: (conversion_aux xs u)
 conversion_aux xs (LLet x t1 t2) = Let (conversion_aux xs t1) (conversion_aux (x:xs) t2)
-
+conversion_aux xs LZero = Zero
+conversion_aux xs (LSuc t) = Suc (conversion_aux xs t) 
+conversion_aux xs (LRec t1 t2 t3) = Rec (conversion_aux xs t1) (conversion_aux xs t2) (conversion_aux xs t3)
 
 ligada :: String -> [String] -> Int -> Term
 ligada name [] _ = (Free (Global name))
@@ -64,6 +66,13 @@ eval nvs (u :@: v) = let f = eval nvs u
                          in aplicar f arg
                       where 
                         aplicar (VLam t cuerpo) arg = eval nvs (sub 0 (quote arg) cuerpo)
+eval nvs Zero = VNum NZero
+eval nvs (Suc t) = case eval nvs t of 
+                    VNum nv -> VNum (NSuc nv)
+eval nvs (Rec t1 t2 t3) = case eval nvs t3 of 
+                          VNum NZero -> eval nvs t1
+                          VNum (NSuc t) -> let recursivo = eval nvs (Rec t1 t2 (quote (VNum t)))
+                                          in eval nvs (t2 :@: (quote recursivo) :@: (quote (VNum t)))
 
 buscarEnv :: NameEnv Value Type -> Name -> Value
 buscarEnv ((y, (valor, tipo)):xs) x = if x == y 
@@ -118,4 +127,12 @@ infer' c e (t :@: u) = infer' c e t >>= \tt -> infer' c e u >>= \tu ->
     _          -> notfunError tt
 infer' c e (Lam t u) = infer' (t : c) e u >>= \tu -> ret $ FunT t tu
 infer' c e (Let t1 t2) = infer' c e t1 >>= \type1 -> infer' (type1 : c) e t2
-
+infer' c e Zero = ret NatT
+infer' c e (Suc t) = infer' c e t >>= \tipo -> if tipo == NatT then ret tipo 
+                                                               else matchError NatT tipo
+infer' c e (Rec t1 t2 t3) = infer' c e t1 >>= \tipo1 -> infer' c e t2 >>= \tipo2 -> infer' c e t3 >>= \tipo3 -> 
+  case tipo2 of 
+    FunT tipoA (FunT NatT tipoB) -> if tipo1 == tipoA && tipo3 == NatT && tipoA == tipoB
+                                    then ret tipoA
+                                    else err "Tipos incorrectos en Rec: t1:T, t2:T->Nat->T, t3:Nat"
+    _  -> err "El segundo argumento de R debe tener tipo T -> Nat -> T"
