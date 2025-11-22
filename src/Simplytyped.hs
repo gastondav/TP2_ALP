@@ -22,15 +22,14 @@ import           Common
 
 -- conversion a términos localmente sin nombres
 conversion :: LamTerm -> Term
-conversion (LVar x) = (Free (Global x))
-conversion (LAbs x tipo lterm) = Lam tipo (conversion_aux [x] lterm )
-conversion (LApp v u) = (conversion v) :@: (conversion u)
-
+conversion t = conversion_aux [] t
 
 conversion_aux :: [String] -> LamTerm -> Term
-conversion_aux xs (LVar x) = (ligada x xs 0) 
+conversion_aux xs (LVar x) = ligada x xs 0 
 conversion_aux xs (LAbs x t lterm) = Lam t (conversion_aux (x:xs) lterm)  
 conversion_aux xs (LApp v u) = (conversion_aux xs v) :@: (conversion_aux xs u)
+conversion_aux xs (LLet x t1 t2) = Let (conversion_aux xs t1) (conversion_aux (x:xs) t2)
+
 
 ligada :: String -> [String] -> Int -> Term
 ligada name [] _ = (Free (Global name))
@@ -52,12 +51,14 @@ sub i t (Lam t'  u)           = Lam t' (sub (i + 1) t u)
 
 -- convierte un valor en el término equivalente
 quote :: Value -> Term
-quote (VLam t f) = Lam t f
+quote (VLam t f) = Lam t f  
 
 -- evalúa un término en un entorno dado
 eval :: NameEnv Value Type -> Term -> Value
 eval nvs (Free x) = buscarEnv nvs x 
 eval nvs (Lam t term) = (VLam t term)
+eval nvs (Let t1 t2) = let v1 = eval nvs t1 
+                       in eval nvs (sub 0 (quote v1) t2)
 eval nvs (u :@: v) = let f = eval nvs u
                          arg = eval nvs v
                          in aplicar f arg
@@ -116,5 +117,5 @@ infer' c e (t :@: u) = infer' c e t >>= \tt -> infer' c e u >>= \tu ->
     FunT t1 t2 -> if (tu == t1) then ret t2 else matchError t1 tu
     _          -> notfunError tt
 infer' c e (Lam t u) = infer' (t : c) e u >>= \tu -> ret $ FunT t tu
-
+infer' c e (Let t1 t2) = infer' c e t1 >>= \type1 -> infer' (type1 : c) e t2
 
