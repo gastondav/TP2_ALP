@@ -53,7 +53,13 @@ sub i t (Lam t'  u)           = Lam t' (sub (i + 1) t u)
 
 -- convierte un valor en el término equivalente
 quote :: Value -> Term
-quote (VLam t f) = Lam t f  
+quote (VLam t f) = Lam t f 
+quote (VNum nv) = quoteNum nv
+
+quoteNum :: NumVal -> Term
+quoteNum NZero     = Zero
+quoteNum (NSuc nv) = Suc (quoteNum nv)
+  
 
 -- evalúa un término en un entorno dado
 eval :: NameEnv Value Type -> Term -> Value
