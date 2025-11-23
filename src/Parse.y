@@ -29,6 +29,7 @@ import Data.Char
     IN      { TIn}
     VAR     { TVar $$ }
     TYPEE   { TTypeE }
+    NATT    { TNatT }
     DEF     { TDef }
     
 
@@ -53,15 +54,16 @@ Exp     :: { LamTerm }
 NAbs    :: { LamTerm }
         : NAbs Atom                    { LApp $1 $2 }
         | Atom                         { $1 }
-        | ZERO                         { LZero}
         | SUC Atom                     { LSuc $2}
         | Rec Atom Atom Atom           { LRec $2 $3 $4}
 
 Atom    :: { LamTerm }
         : VAR                          { LVar $1 }  
         | '(' Exp ')'                  { $2 }
+        | ZERO                         { LZero}
 
 Type    : TYPEE                        { EmptyT }
+        | NATT                         { NatT }
         | Type '->' Type               { FunT $1 $3 }
         | '(' Type ')'                 { $2 }
 
@@ -99,6 +101,7 @@ happyError = \ s i -> Failed $ "Línea "++(show (i::LineNumber))++": Error de pa
 
 data Token = TVar String
                | TTypeE
+               | TNatT
                | TDef
                | TAbs
                | TDot
@@ -143,6 +146,7 @@ lexer cont s = case s of
                               ("zero", rest) -> cont TZero rest
                               ("suc", rest)  -> cont TSuc rest
                               ("R", rest)    -> cont TRec rest
+                              ("NatT", rest) -> cont TNatT rest
                               (var,rest)    -> cont (TVar var) rest
                           consumirBK anidado cl cont s = case s of
                               ('-':('-':cs)) -> consumirBK anidado cl cont $ dropWhile ((/=) '\n') cs
