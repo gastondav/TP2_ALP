@@ -1,0 +1,12 @@
+
+def suma =  (\n:NatT.\m:NatT. (R m (\x:NatT.\y:NatT. suc x) n))
+
+def length = (\l:ListT. (RL zero (\n:NatT.\l:ListT.\r:NatT. (suc r)) l))
+
+def pred = (\n:NatT. (R zero (\x:NatT.\y:NatT. y) n))
+
+def resta = (\n:NatT.\m:NatT. (R n (\x:NatT.\y:NatT. (pred x)) m ) )
+
+def sumPosaux = (\x:NatT.\l:ListT. (RL nil (\n:NatT.\l:ListT.\r:ListT. (cons (suma  n (resta x (length r))) r)) l)  )
+
+def sumPos = (\l:ListT. (sumPosaux (length l) l))
