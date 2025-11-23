@@ -50,6 +50,9 @@ sub _ _ (Bound j) | otherwise = Bound j
 sub _ _ (Free n   )           = Free n
 sub i t (u   :@: v)           = sub i t u :@: sub i t v
 sub i t (Lam t'  u)           = Lam t' (sub (i + 1) t u)
+sub i r Zero = Zero
+sub i r (Suc t) = Suc (sub i r t)
+sub i r (Rec t1 t2 t3) = Rec (sub i r t1) (sub i r t2) (sub i r t3)
 
 -- convierte un valor en el término equivalente
 quote :: Value -> Term
@@ -77,8 +80,10 @@ eval nvs (Suc t) = case eval nvs t of
                     VNum nv -> VNum (NSuc nv)
 eval nvs (Rec t1 t2 t3) = case eval nvs t3 of 
                           VNum NZero -> eval nvs t1
-                          VNum (NSuc t) -> let recursivo = eval nvs (Rec t1 t2 (quote (VNum t)))
-                                          in eval nvs (t2 :@: (quote recursivo) :@: (quote (VNum t)))
+                          VNum (NSuc nv) -> let t_n = quote (VNum nv)
+                                                t_rec = Rec t1 t2 t_n 
+                                                apli = t2 :@: t_rec :@: t_n 
+                                            in eval nvs apli
 
 buscarEnv :: NameEnv Value Type -> Name -> Value
 buscarEnv ((y, (valor, tipo)):xs) x = if x == y 
