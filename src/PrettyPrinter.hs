@@ -47,7 +47,8 @@ pp ii vs (Let t1 t2) =
 pp ii vs Zero = text "0"
 pp ii vs (Suc t) = text "suc" <+> pp ii vs t
 pp ii vs (Rec t1 t2 t3) = text "R" <+> pp ii vs t1 <+> pp ii vs t2 <+> pp ii vs t3
-
+pp ii vs Nil = text "nil"
+pp ii vs (Cons t1 t2) = text "cons" <+> pp ii vs t1 <+> pp ii vs t2
 
 isLam :: Term -> Bool
 isLam (Lam _ _) = True
@@ -77,6 +78,8 @@ fv (Lam _   u       ) = fv u
 fv Zero = []                  
 fv (Suc t) = fv t            
 fv (Rec t1 t2 t3) = fv t1 ++ fv t2 ++ fv t3
+fv Nil = []
+fv (Cons t1 t2) = fv t1 ++ fv t2
 
 ---
 printTerm :: Term -> Doc

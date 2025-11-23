@@ -25,11 +25,15 @@ import Data.Char
     ZERO    { TZero }
     SUC     { TSuc }
     Rec     { TRec }
+    NIL     { TNil }
+    CONS    { TCons }
+    RecL   { TRecL }
     LET     { TLet}
     IN      { TIn}
     VAR     { TVar $$ }
     TYPEE   { TTypeE }
     NATT    { TNatT }
+    LISTT   { TListT }
     DEF     { TDef }
     
 
@@ -38,6 +42,8 @@ import Data.Char
 %right LET IN
 %right '\\' '.' 
 %right Rec
+%right RecL
+%right CONS
 %right SUC
 
 %%
@@ -49,8 +55,15 @@ Defexp  : DEF VAR '=' Exp              { Def $2 $4 }
 Exp     :: { LamTerm }
         : '\\' VAR ':' Type '.' Exp    { LAbs $2 $4 $6 }
         | LET VAR '=' Exp IN Exp       { LLet $2 $4 $6 }
-        | NAbs                         { $1 }
+        | LsAbs                         { $1 }
         
+LsAbs ::{LamTerm}
+        :LsAbs Atom                     { LApp $1 $2 }
+        | Atom                          { $1 }
+        | CONS Atom Atom                {LCons $2 $3 }
+        | RecL Atom Atom Atom           { LRecL $2 $3 $4}
+        | NAbs                          { $1 }
+
 NAbs    :: { LamTerm }
         : NAbs Atom                    { LApp $1 $2 }
         | Atom                         { $1 }
@@ -61,9 +74,11 @@ Atom    :: { LamTerm }
         : VAR                          { LVar $1 }  
         | '(' Exp ')'                  { $2 }
         | ZERO                         { LZero}
+        | NIL                          { LNil }
 
 Type    : TYPEE                        { EmptyT }
         | NATT                         { NatT }
+        | LISTT                       { ListT }
         | Type '->' Type               { FunT $1 $3 }
         | '(' Type ')'                 { $2 }
 
@@ -102,6 +117,7 @@ happyError = \ s i -> Failed $ "Línea "++(show (i::LineNumber))++": Error de pa
 data Token = TVar String
                | TTypeE
                | TNatT
+               | TListT
                | TDef
                | TAbs
                | TDot
@@ -116,6 +132,9 @@ data Token = TVar String
                | TZero
                | TSuc
                | TRec
+               | TNil
+               | TCons
+               | TRecL
                deriving Show
 
 ----------------------------------
@@ -147,6 +166,10 @@ lexer cont s = case s of
                               ("suc", rest)  -> cont TSuc rest
                               ("R", rest)    -> cont TRec rest
                               ("NatT", rest) -> cont TNatT rest
+                              ("nil", rest) -> cont TNil rest
+                              ("cons", rest) -> cont TCons rest
+                              ("RL", rest) -> cont TRecL rest
+                              ("ListT", rest) -> cont TListT rest  
                               (var,rest)    -> cont (TVar var) rest
                           consumirBK anidado cl cont s = case s of
                               ('-':('-':cs)) -> consumirBK anidado cl cont $ dropWhile ((/=) '\n') cs

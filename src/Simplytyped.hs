@@ -32,6 +32,9 @@ conversion_aux xs (LLet x t1 t2) = Let (conversion_aux xs t1) (conversion_aux (x
 conversion_aux xs LZero = Zero
 conversion_aux xs (LSuc t) = Suc (conversion_aux xs t) 
 conversion_aux xs (LRec t1 t2 t3) = Rec (conversion_aux xs t1) (conversion_aux xs t2) (conversion_aux xs t3)
+conversion_aux xs LNil = Nil
+conversion_aux xs (LCons t1 t2) = (Cons (conversion_aux xs t1) (conversion_aux xs t2))
+conversion_aux xs (LRecL t1 t2 t3) = RecL (conversion_aux xs t1) (conversion_aux xs t2) (conversion_aux xs t3)
 
 ligada :: String -> [String] -> Int -> Term
 ligada name [] _ = (Free (Global name))
@@ -53,16 +56,24 @@ sub i t (Lam t'  u)           = Lam t' (sub (i + 1) t u)
 sub i r Zero = Zero
 sub i r (Suc t) = Suc (sub i r t)
 sub i r (Rec t1 t2 t3) = Rec (sub i r t1) (sub i r t2) (sub i r t3)
+sub i r Nil = Nil
+sub i r (Cons t1 t2) = (Cons (sub i r t1) (sub i r t2)) 
+sub i r (RecL t1 t2 t3) = RecL (sub i r t1) (sub i r t2) (sub i r t3)
 
 -- convierte un valor en el término equivalente
 quote :: Value -> Term
 quote (VLam t f) = Lam t f 
 quote (VNum nv) = quoteNum nv
+quote (VList lv) = quoteList lv
 
 quoteNum :: NumVal -> Term
 quoteNum NZero     = Zero
 quoteNum (NSuc nv) = Suc (quoteNum nv)
-  
+
+quoteList :: ListVal -> Term
+quoteList VNil = Nil
+quoteList (VCons nv lv) = (Cons (quoteNum nv) (quoteList lv))
+
 
 -- evalúa un término en un entorno dado
 eval :: NameEnv Value Type -> Term -> Value
@@ -84,6 +95,17 @@ eval nvs (Rec t1 t2 t3) = case eval nvs t3 of
                                                 t_rec = Rec t1 t2 t_n 
                                                 apli = t2 :@: t_rec :@: t_n 
                                             in eval nvs apli
+eval nvs Nil = (VList VNil)
+eval nvs (Cons t1 t2) = let (VNum nv) = (eval nvs t1)
+                            (VList lv) = (eval nvs t2)
+                            in (VList (VCons nv lv))
+eval nvs (RecL t1 t2 t3) = case eval nvs t3 of                           
+                          VList VNil -> eval nvs t1
+                          VList (VCons nv lv) -> let t_n = quote (VNum nv)
+                                                     t_l = quote (VList lv)
+                                                     t_rec = RecL t1 t2 t_l
+                                                     apli = t2 :@: t_n :@: t_l :@: t_rec
+                                                 in eval nvs apli 
 
 buscarEnv :: NameEnv Value Type -> Name -> Value
 buscarEnv ((y, (valor, tipo)):xs) x = if x == y 
@@ -147,3 +169,15 @@ infer' c e (Rec t1 t2 t3) = infer' c e t1 >>= \tipo1 -> infer' c e t2 >>= \tipo2
                                     then ret tipoA
                                     else err "Tipos incorrectos en Rec: t1:T, t2:T->Nat->T, t3:Nat"
     _  -> err "El segundo argumento de R debe tener tipo T -> Nat -> T"
+infer' c e Nil = ret ListT
+infer' c e (Cons t1 t2) =  infer' c e t1 >>= \tipo1 -> infer' c e t2 >>= \tipo2 -> 
+                          if tipo1 == NatT && tipo2 == ListT
+                            then ret ListT
+                            else err "Tipos incorrectos en cons: t1:Nat  t2:List Nat"
+                          
+infer' c e (RecL t1 t2 t3) = infer' c e t1 >>= \tipo1 -> infer' c e t2 >>= \tipo2 -> infer' c e t3 >>= \tipo3 -> 
+  case tipo2 of
+    FunT NatT (FunT ListT (FunT tipoA tipoB)) -> if tipo1 == tipoA && tipo3 == ListT && tipoA == tipoB
+                                                  then ret tipoA
+                                                  else err "Tipos incorrectos en RecL: t1:T, t2:Nat->List Nat->T->T, t3:List Nat"
+    _  -> err "El segundo argumento de R debe tener tipo Nat ->List Nat -> T -> T"
