@@ -1,1 +1,2 @@
-def Ack = \m:NatT. R (\k:NatT. suc k) (\p:NatT->NatT. \x:NatT. (\n:NatT->NatT. R (p 1) (\r:NatT->NatT.\y:NatT. p r) n)) m
+def uno = suc zero
+def Ack = \m:NatT. (R (\k:NatT. (suc k)) (\ackPred:NatT->NatT. \mPred:NatT. \n:NatT. (R (ackPred (suc zero)) (\resNPred:NatT. \nPred:NatT. (ackPred resNPred)) n)) m)
