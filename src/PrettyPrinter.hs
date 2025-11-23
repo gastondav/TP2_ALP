@@ -62,7 +62,8 @@ printType :: Type -> Doc
 printType EmptyT = text "E"
 printType (FunT t1 t2) =
   sep [parensIf (isFun t1) (printType t1), text "->", printType t2]
-
+printType NatT = text "NatT"
+printType ListT = text "ListT"
 
 isFun :: Type -> Bool
 isFun (FunT _ _) = True
@@ -73,9 +74,11 @@ fv (Bound _         ) = []
 fv (Free  (Global n)) = [n]
 fv (t   :@: u       ) = fv t ++ fv u
 fv (Lam _   u       ) = fv u
+fv Zero = []                  
+fv (Suc t) = fv t            
+fv (Rec t1 t2 t3) = fv t1 ++ fv t2 ++ fv t3
 
 ---
 printTerm :: Term -> Doc
 printTerm t = pp 0 (filter (\v -> not $ elem v (fv t)) vars) t
-
 
